@@ -43,19 +43,17 @@ workflows:
 
       - name: Force compileSdkVersion for all subprojects
         script: |
-          # Inyecta el bloque que fuerza compileSdkVersion 34 a todos los módulos (incluido usb_serial)
-          cat >> android/build.gradle << 'EOF'
-
-subprojects {
-    afterEvaluate { project ->
-        if (project.plugins.hasPlugin("com.android.application") || project.plugins.hasPlugin("com.android.library")) {
-            project.android {
-                compileSdkVersion 34
-            }
-        }
-    }
-}
-EOF
+          # Inyecta la configuración usando echo para evitar errores de formato YAML
+          echo '' >> android/build.gradle
+          echo 'subprojects {' >> android/build.gradle
+          echo '    afterEvaluate { project ->' >> android/build.gradle
+          echo '        if (project.plugins.hasPlugin("com.android.application") || project.plugins.hasPlugin("com.android.library")) {' >> android/build.gradle
+          echo '            project.android {' >> android/build.gradle
+          echo '                compileSdkVersion 34' >> android/build.gradle
+          echo '            }' >> android/build.gradle
+          echo '        }' >> android/build.gradle
+          echo '    }' >> android/build.gradle
+          echo '}' >> android/build.gradle
 
       - name: Build APK
         script: flutter build apk --debug
