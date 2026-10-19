@@ -17,6 +17,11 @@ workflows:
           cp pubspec.yaml /tmp/backup/pubspec.yaml
           cp -r lib /tmp/backup/lib
 
+      - name: Clean and Prepare Flutter
+        script: |
+          flutter clean
+          flutter pub get --offline || flutter pub get
+
       - name: Scaffold Flutter project (generate android folder)
         script: |
           flutter create --platforms=android --project-name humidity_meter --org com.cobiin .
@@ -33,7 +38,7 @@ workflows:
           mkdir -p android/app/src/main/res/xml
           cp overlay/usb_device_filter.xml android/app/src/main/res/xml/usb_device_filter.xml
 
-      - name: Flutter pub get
+      - name: Get Dependencies
         script: flutter pub get
 
       - name: Patch Android build.gradle (minSdk)
