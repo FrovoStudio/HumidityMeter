@@ -6,6 +6,10 @@ workflows:
     environment:
       flutter: stable
       java: 17
+    cache:
+      cache_paths:
+        - ~/.pub-cache
+        - ~/.gradle/caches
     scripts:
       - name: Backup custom files
         script: |
@@ -31,6 +35,18 @@ workflows:
 
       - name: Flutter pub get
         script: flutter pub get
+
+      - name: Patch usb_serial plugin (jcenter fix)
+        script: |
+          # Reemplaza jcenter() (obsoleto) por mavenCentral() en el plugin
+          sed -i 's/jcenter()/mavenCentral()/g' ~/.pub-cache/hosted/pub.dev/usb_serial-*/android/build.gradle || true
+
+      - name: Patch Android build.gradle (minSdk & namespace)
+        script: |
+          # 1. Fuerza minSdkVersion a 21 (requerido por usb_serial)
+          sed -i 's/minSdkVersion flutter.minSdkVersion/minSdkVersion 21/g' android/app/build.gradle || true
+          # 2. Añade el namespace en caso de que falte (error común de AGP 8+)
+          sed -i 's/android {/android {\n    namespace "com.cobiin.humidity_meter"/g' android/app/build.gradle || true
 
       - name: Build APK
         script: flutter build apk --debug
