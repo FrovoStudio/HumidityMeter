@@ -9,7 +9,10 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
-  usb_serial: ^0.5.2
+  usb_serial:
+    git:
+      url: https://github.com/TyphoonWu/usbserial.git
+      ref: master
   fl_chart: ^0.66.2
   cupertino_icons: ^1.0.6
 
