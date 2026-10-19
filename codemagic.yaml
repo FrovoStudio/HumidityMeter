@@ -41,6 +41,16 @@ workflows:
       - name: Flutter pub get
         script: flutter pub get
 
+      - name: Patch compileSdk for usb_serial
+        script: |
+          # 1. Forzar compileSdk 34 en el proyecto principal
+          sed -i 's/compileSdk = flutter.compileSdkVersion/compileSdk = 34/g' android/app/build.gradle.kts || true
+          sed -i 's/compileSdkVersion flutter.compileSdkVersion/compileSdkVersion 34/g' android/app/build.gradle || true
+          
+          # 2. Buscar el archivo build.gradle del plugin usb_serial y forzar compileSdkVersion 34
+          find ~/.pub-cache -name "build.gradle" -path "*usb_serial*" -exec sed -i 's/compileSdkVersion 33/compileSdkVersion 34/g' {} +
+          find ~/.pub-cache -name "build.gradle" -path "*usb_serial*" -exec sed -i 's/compileSdk 33/compileSdk 34/g' {} +
+
       - name: Build APK
         script: flutter build apk --debug
 
