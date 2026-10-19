@@ -36,20 +36,9 @@ workflows:
       - name: Flutter pub get
         script: flutter pub get
 
-      - name: Patch usb_serial plugin (jcenter fix)
-        script: |
-          sed -i 's/jcenter()/mavenCentral()/g' ~/.pub-cache/hosted/pub.dev/usb_serial-*/android/build.gradle || true
-
-      - name: Patch Android build.gradle (minSdk & namespace)
+      - name: Patch Android build.gradle (minSdk)
         script: |
           sed -i 's/minSdkVersion flutter.minSdkVersion/minSdkVersion 21/g' android/app/build.gradle || true
-          sed -i 's/android {/android {\n    namespace "com.cobiin.humidity_meter"/g' android/app/build.gradle || true
-
-      - name: Disable newDsl and builtInKotlin
-        script: |
-          # Añade las flags de compatibilidad para AGP 9+
-          echo "android.newDsl=false" >> android/gradle.properties
-          echo "android.builtInKotlin=false" >> android/gradle.properties
 
       - name: Build APK
         script: flutter build apk --debug
