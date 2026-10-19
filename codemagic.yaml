@@ -17,14 +17,14 @@ workflows:
           cp pubspec.yaml /tmp/backup/pubspec.yaml
           cp -r lib /tmp/backup/lib
 
-      - name: Clean and Prepare Flutter
+      - name: Clean environment
         script: |
           flutter clean
-          flutter pub get --offline || flutter pub get
+          rm -rf .dart_tool build pubspec.lock
 
-      - name: Scaffold Flutter project (generate android folder)
+      - name: Scaffold Flutter project (no pub)
         script: |
-          flutter create --platforms=android --project-name humidity_meter --org com.cobiin .
+          flutter create --platforms=android --project-name humidity_meter --org com.cobiin --no-pub .
 
       - name: Restore custom files
         script: |
@@ -38,8 +38,13 @@ workflows:
           mkdir -p android/app/src/main/res/xml
           cp overlay/usb_device_filter.xml android/app/src/main/res/xml/usb_device_filter.xml
 
-      - name: Get Dependencies
+      - name: Flutter pub get
         script: flutter pub get
+
+      - name: Patch usb_serial jcenter fix
+        script: |
+          # Reemplaza jcenter() por mavenCentral() en el plugin usb_serial
+          sed -i 's/jcenter()/mavenCentral()/g' ~/.pub-cache/hosted/pub.dev/usb_serial-0.5.2/android/build.gradle || true
 
       - name: Patch Android build.gradle (minSdk)
         script: |
