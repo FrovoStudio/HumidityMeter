@@ -20,7 +20,7 @@ workflows:
       - name: Clean environment
         script: flutter clean
 
-      - name: Scaffold Flutter project (generate android folder)
+      - name: Scaffold Flutter project
         script: |
           flutter create --platforms=android --project-name humidity_meter --org com.cobiin --no-pub .
 
@@ -30,7 +30,7 @@ workflows:
           rm -rf lib
           cp -r /tmp/backup/lib lib
 
-      - name: Apply custom AndroidManifest with USB permissions
+      - name: Apply custom AndroidManifest
         script: |
           cp overlay/AndroidManifest.xml android/app/src/main/AndroidManifest.xml
           mkdir -p android/app/src/main/res/xml
@@ -39,30 +39,33 @@ workflows:
       - name: Flutter pub get
         script: flutter pub get
 
-      - name: Patch Gradle files (compileSdk 34 & minSdk 21)
+      - name: Patch Android SDK versions (Robust)
         script: |
-          # 1. Forzar compileSdkVersion 34 en los plugins de pub-cache
-          find ~/.pub-cache -type f -name "*.gradle" -exec sed -i 's/compileSdkVersion 33/compileSdkVersion 34/g' {} +
-          find ~/.pub-cache -type f -name "*.gradle" -exec sed -i 's/compileSdk 33/compileSdk 34/g' {} +
-          find ~/.pub-cache -type f -name "*.gradle.kts" -exec sed -i 's/compileSdk = 33/compileSdk = 34/g' {} +
+          # 1. Parchear el plugin usb_serial en la caché de paquetes
+          find ~/.pub-cache -path "*usb_serial*/android/build.gradle" -exec sed -i 's/compileSdkVersion 33/compileSdkVersion 34/g' {} +
+          find ~/.pub-cache -path "*usb_serial*/android/build.gradle" -exec sed -i 's/compileSdk 33/compileSdk 34/g' {} +
+          find ~/.pub-cache -path "*usb_serial*/android/build.gradle.kts" -exec sed -i 's/compileSdk = 33/compileSdk = 34/g' {} +
           
-          # 2. Forzar compileSdkVersion 34 en el proyecto Android
-          find android -type f -name "*.gradle" -exec sed -i 's/compileSdkVersion 33/compileSdkVersion 34/g' {} +
-          find android -type f -name "*.gradle" -exec sed -i 's/compileSdkVersion flutter.compileSdkVersion/compileSdkVersion 34/g' {} +
-          find android -type f -name "*.gradle.kts" -exec sed -i 's/compileSdk = 33/compileSdk = 34/g' {} +
-          find android -type f -name "*.gradle.kts" -exec sed -i 's/compileSdk = flutter.compileSdkVersion/compileSdk = 34/g' {} +
-
-          # 3. Forzar minSdkVersion 21 (requerido por usb_serial)
-          find android -type f -name "*.gradle" -exec sed -i 's/minSdkVersion flutter.minSdkVersion/minSdkVersion 21/g' {} +
-          find android -type f -name "*.gradle.kts" -exec sed -i 's/minSdk = flutter.minSdkVersion/minSdk = 21/g' {} +
+          # 2. Parchear el proyecto principal (Groovy)
+          if [ -f "android/app/build.gradle" ]; then
+            sed -i 's/compileSdkVersion flutter.compileSdkVersion/compileSdkVersion 34/g' android/app/build.gradle
+            sed -i 's/minSdkVersion flutter.minSdkVersion/minSdkVersion 21/g' android/app/build.gradle
+          fi
+          
+          # 3. Parchear el proyecto principal (Kotlin DSL)
+          if [ -f "android/app/build.gradle.kts" ]; then
+            sed -i 's/compileSdk = flutter.compileSdkVersion/compileSdk = 34/g' android/app/build.gradle.kts
+            sed -i 's/minSdk = flutter.minSdkVersion/minSdk = 21/g' android/app/build.gradle.kts
+          fi
 
       - name: Build APK
         script: |
           flutter build apk --debug
-          echo "--- Buscando APKs generados ---"
-          find build -name "*.apk" || true
+          echo "--- Buscando el APK generado ---"
+          find . -name "*.apk"
 
     artifacts:
-      # Ampliamos la ruta por si Gradle lo guarda en un directorio alternativo
+      # Aquí le decimos a Codemagic que busque en todas las rutas posibles
       - build/app/outputs/flutter-apk/*.apk
-      - build/app/outputs/apk/**/*.apk
+      - build/app/outputs/apk/debug/*.apk
+      - build/**/*.apk
