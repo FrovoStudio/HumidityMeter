@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Arduino oficial (CDC-ACM) -->
+    <usb-device vendor-id="9025" />
+    <usb-device vendor-id="10755" />
+    <!-- CH340 / CH341 (clones Arduino) -->
+    <usb-device vendor-id="6790" />
+    <!-- CP210x (clones Arduino) -->
+    <usb-device vendor-id="4292" />
+    <!-- FTDI (Arduino Nano antiguos) -->
+    <usb-device vendor-id="1027" />
+    <!-- Arduino CDC genérico -->
+    <usb-device vendor-id="5824" />
+</resources>
