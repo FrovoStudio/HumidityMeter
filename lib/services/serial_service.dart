@@ -36,7 +36,7 @@ class SerialService {
     );
 
     _sub = _port!.inputStream!
-        .transform(const Utf8Decoder(allowMalformed: true))
+        .map((data) => utf8.decode(data, allowMalformed: true))
         .transform(const LineSplitter())
         .listen(_parseLine, onError: (_) {});
 
